@@ -82,15 +82,7 @@ kubectl create secret generic inventra-api-secrets -n inventra \
   > apps/inventra-api/overlays/prod/sealed-secret-api.yaml
 ```
 
-Pull secret do GHCR (PAT com `read:packages`):
-
-```bash
-kubectl create secret docker-registry ghcr-pull -n inventra \
-  --docker-server=ghcr.io --docker-username=<usuario> --docker-password=<PAT> \
-  --dry-run=client -o yaml \
-  | kubeseal --controller-namespace kube-system -o yaml \
-  > apps/inventra-api/overlays/prod/sealed-secret-ghcr.yaml
-```
+Imagem no GHCR: o pacote é **público** (o repo da API é público), então não há pull secret. Depois do primeiro push, em *Packages → inventra-api → Package settings → Change visibility → Public*.
 
 Depois descomente as linhas correspondentes em `overlays/prod/kustomization.yaml`.
 
