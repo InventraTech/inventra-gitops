@@ -5,7 +5,7 @@ resources:
   - ../../base
   - ingress.yaml
   # Gerados com kubeseal (ver README) e adicionados aqui:
-  # - sealed-secret-api.yaml     -> inventra-api-secrets
+  - sealed-secret-api.yaml
 
 # Esta seção é atualizada automaticamente pelo CD (kustomize edit set image).
 images:

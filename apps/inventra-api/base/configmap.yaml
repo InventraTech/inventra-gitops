@@ -14,3 +14,11 @@ data:
   REDIS_DATABASE: "0"
   MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
   CORS_ALLOWED_ORIGINS: "http://localhost:3000"
+  # TODO(redis): valores de reserva só para o Spring iniciar (as propriedades REDIS_* não têm padrão).
+  # Nada na main da API usa Redis hoje. Quando o Redis entrar, ponha REDIS_HOST/PORT/USERNAME/PASSWORD
+  # no SealedSecret (o secret prevalece sobre o ConfigMap) e REMOVA estas linhas e o MANAGEMENT_HEALTH_REDIS_ENABLED.
+  REDIS_HOST: "localhost"
+  REDIS_PORT: "6379"
+  REDIS_USERNAME: "default"
+  REDIS_PASSWORD: "unused"
+  MANAGEMENT_HEALTH_REDIS_ENABLED: "false"
