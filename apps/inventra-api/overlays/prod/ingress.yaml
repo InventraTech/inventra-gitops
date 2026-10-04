@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: inventra-api
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - api.CHANGE-ME.example.com   # TODO: domínio real
+      secretName: inventra-api-tls
+  rules:
+    - host: api.CHANGE-ME.example.com   # TODO: domínio real
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: inventra-api
+                port:
+                  name: http

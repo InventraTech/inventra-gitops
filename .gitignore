@@ -1,0 +1,8 @@
+# Segredos NUNCA entram no git em texto puro
+secrets-plain/
+*.pem
+*.key
+sealed-secrets-master.key
+.env
+*.kubeconfig
+kubeconfig*

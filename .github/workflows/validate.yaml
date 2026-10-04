@@ -1,0 +1,40 @@
+name: "Validate"
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: "Renderizar e validar manifests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout do código"
+        uses: actions/checkout@v7
+
+      - name: "Bloquear Secret em texto puro"
+        # Só SealedSecret pode entrar no git. Um `kind: Secret` quebra a PR.
+        run: |
+          if grep -rEl '^kind:[[:space:]]*Secret[[:space:]]*$' apps platform clusters bootstrap; then
+            echo "::error::Secret em texto puro encontrado. Use kubeseal (ver README)."
+            exit 1
+          fi
+
+      - name: "Instalar kustomize e kubeconform"
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+          curl -fsSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: "kustomize build + kubeconform"
+        # CRDs (Application, ClusterIssuer, SealedSecret) não têm schema padrão: são ignorados.
+        run: |
+          for dir in apps/inventra-api/overlays/prod platform/cert-manager platform/sealed-secrets platform/cluster-issuers bootstrap/argocd; do
+            echo "::group::$dir"
+            kustomize build "$dir" | kubeconform -strict -summary -ignore-missing-schemas
+            echo "::endgroup::"
+          done
+          # Applications e root-app são YAML puro (sem kustomization).
+          kubeconform -strict -summary -ignore-missing-schemas clusters/prod bootstrap/root-app.yaml

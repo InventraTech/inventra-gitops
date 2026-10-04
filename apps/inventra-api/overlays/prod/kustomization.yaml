@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: inventra
+resources:
+  - ../../base
+  - ingress.yaml
+  # Gerados com kubeseal (ver README) e adicionados aqui:
+  # - sealed-secret-api.yaml     -> inventra-api-secrets
+  # - sealed-secret-ghcr.yaml    -> ghcr-pull
+
+# Esta seção é atualizada automaticamente pelo CD (kustomize edit set image).
+images:
+  - name: ghcr.io/inventratech/inventra-api
+    newTag: v0.1.0
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: inventra-api-config
+    patch: |-
+      - op: replace
+        path: /data/CORS_ALLOWED_ORIGINS
+        value: "https://app.CHANGE-ME.example.com"   # TODO: origem real do front
