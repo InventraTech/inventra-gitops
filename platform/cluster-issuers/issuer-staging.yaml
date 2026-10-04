@@ -7,7 +7,7 @@ metadata:
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: CHANGE-ME@example.com   # TODO: e-mail da equipe
+    email: inventra.oficial@gmail.com
     privateKeySecretRef:
       name: letsencrypt-staging-account-key
     solvers:

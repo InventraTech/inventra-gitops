@@ -86,7 +86,6 @@ Depois descomente as linhas correspondentes em `overlays/prod/kustomization.yaml
 
 ## Pendências (TODO)
 
-- [ ] Trocar `CHANGE-ME.example.com` pelo domínio real (`ingress.yaml` do overlay e do Argo, CORS) e o e-mail dos ClusterIssuers.
 - [ ] **API:** liberar `/actuator/health/**` no `SecurityConfig` (hoje só `/actuator/health` é `permitAll`; as probes de liveness e readiness retornariam 401).
 - [ ] **API:** trocar o CI para não usar banco e Redis reais.
 - [ ] Gerar os SealedSecrets (acima) e descomentá-los no overlay.
