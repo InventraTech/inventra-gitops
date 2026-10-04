@@ -6,7 +6,7 @@ metadata:
   name: inventra-api-config
 data:
   PORT: "8080"
-  SWAGGER_ENABLED: "false"
+  SWAGGER_ENABLED: "true"
   JPA_SHOW_SQL: "false"
   BATCH_EXPIRATION_JOB_ENABLED: "true"
   JWT_EXPIRATION_MS: "86400000"
