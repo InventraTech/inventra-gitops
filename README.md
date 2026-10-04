@@ -35,15 +35,7 @@ kubectl -n argocd rollout status deploy/argocd-server
 kubectl apply -f bootstrap/root-app.yaml
 ```
 
-O repo é privado: antes do `root-app`, cadastre uma **deploy key somente leitura** (as `repoURL` usam SSH):
-
-```bash
-ssh-keygen -t ed25519 -f argocd-deploy -N "" -C "argocd-inventra-gitops"
-gh repo deploy-key add argocd-deploy.pub --repo InventraTech/inventra-gitops --title "argocd (somente leitura)"
-kubectl -n argocd create secret generic repo-inventra-gitops   --from-literal=type=git   --from-literal=url=git@github.com:InventraTech/inventra-gitops.git   --from-file=sshPrivateKey=argocd-deploy
-kubectl -n argocd label secret repo-inventra-gitops argocd.argoproj.io/secret-type=repository
-# guarde a chave privada no cofre da equipe e APAGUE os dois arquivos argocd-deploy*
-```
+O repo é **público**: o Argo CD lê sem nenhuma credencial. Por isso **nunca** coloque segredo em texto puro aqui (a CI bloqueia `kind: Secret`); só `SealedSecret`, que apenas o cluster decifra.
 
 Senha inicial do `admin`:
 
