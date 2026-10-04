@@ -29,7 +29,8 @@ Ordem de sync (sync-waves): cert-manager e sealed-secrets (0) → cluster-issuer
 Pré-requisito: cluster k3s no ar e `kubectl` funcionando.
 
 ```bash
-kubectl apply -k bootstrap/argocd
+# --server-side é obrigatório: os CRDs do Argo CD estouram o limite de annotation do apply comum.
+kubectl apply -k bootstrap/argocd --server-side --force-conflicts
 kubectl -n argocd rollout status deploy/argocd-server
 kubectl apply -f bootstrap/root-app.yaml
 ```
@@ -38,6 +39,13 @@ Senha inicial do `admin`:
 
 ```bash
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
+```
+
+A UI do Argo CD **não é pública**. Acesse pelo túnel (com o `kubectl` apontando para o cluster via Tailscale):
+
+```bash
+kubectl -n argocd port-forward svc/argocd-server 8080:80
+# abrir http://localhost:8080
 ```
 
 Depois de instalar o sealed-secrets, **faça backup da chave privada num cofre da equipe**

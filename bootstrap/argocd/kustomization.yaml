@@ -5,10 +5,9 @@ resources:
   - namespace.yaml
   # Versão pinada: atualizar via PR e reaplicar com `kubectl apply -k bootstrap/argocd`.
   - https://raw.githubusercontent.com/argoproj/argo-cd/v3.0.0/manifests/install.yaml
-  - ingress.yaml
 
 patches:
-  # O TLS é terminado no Traefik; o argocd-server fala HTTP por trás dele.
+  # argocd-server em HTTP puro: a UI não fica pública, é acessada por port-forward/Tailscale.
   - target:
       kind: ConfigMap
       name: argocd-cmd-params-cm

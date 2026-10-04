@@ -20,4 +20,4 @@ patches:
     patch: |-
       - op: replace
         path: /data/CORS_ALLOWED_ORIGINS
-        value: "https://app.CHANGE-ME.example.com"   # TODO: origem real do front
+        value: "http://localhost:3000"   # TODO: trocar pela origem real do front quando existir

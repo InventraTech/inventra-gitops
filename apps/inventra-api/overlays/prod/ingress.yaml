@@ -8,10 +8,10 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - api.CHANGE-ME.example.com   # TODO: domínio real
+        - inventra-api.duckdns.org
       secretName: inventra-api-tls
   rules:
-    - host: api.CHANGE-ME.example.com   # TODO: domínio real
+    - host: inventra-api.duckdns.org
       http:
         paths:
           - path: /
