@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/dvarakaki/inventra-gitops.git
+    repoURL: https://github.com/InventraTech/inventra-gitops.git
     targetRevision: main
     path: platform/cluster-issuers
   destination:
