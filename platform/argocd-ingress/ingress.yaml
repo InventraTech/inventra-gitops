@@ -1,0 +1,20 @@
+# Interface do Argo CD pelo IP público, em HTTP, no caminho /argocd (sem host, sem TLS).
+# Requer server.rootpath/basehref = /argocd no argocd-cmd-params-cm (bootstrap/argocd).
+# Convive com o Ingress da API (caminho /): o Traefik escolhe a regra mais específica.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /argocd
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 80
