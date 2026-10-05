@@ -1,18 +1,13 @@
+# Acesso pelo IP público (Elastic IP) em HTTP, sem nome DNS e sem certificado.
+# Sem `host`, o Traefik atende qualquer requisição que chegue na porta 80.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: inventra-api
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
-  tls:
-    - hosts:
-        - inventra-api.duckdns.org
-      secretName: inventra-api-tls
   rules:
-    - host: inventra-api.duckdns.org
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix
