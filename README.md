@@ -53,6 +53,13 @@ kubectl -n argocd rollout status deploy/argocd-server
 kubectl apply -f bootstrap/root-app.yaml
 ```
 
+O bootstrap **não** é sincronizado pelo Argo CD: depois de mudar `bootstrap/argocd` (por exemplo, a
+versão da extensão), reaplique no cluster com o mesmo `kubectl apply -k bootstrap/argocd --server-side --force-conflicts`.
+
+A UI do Argo CD tem a **extensão de Rollout** (`argoproj-labs/rollout-extension`, v0.3.7): ao clicar no
+`Rollout` na árvore do app aparece a aba **Rollout**, com os passos do canary, os pesos e as revisões.
+A v0.4.x exige Argo CD >= 3.5; ao atualizar o Argo CD, atualize a extensão junto.
+
 O repo é **público**: o Argo CD lê sem nenhuma credencial. Por isso **nunca** coloque segredo em texto puro aqui (a CI bloqueia `kind: Secret`); só `SealedSecret`, que apenas o cluster decifra.
 
 Senha inicial do `admin`:
