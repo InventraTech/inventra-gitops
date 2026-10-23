@@ -18,3 +18,40 @@ patches:
           server.insecure: "true"
           server.rootpath: "/argocd"
           server.basehref: "/argocd"
+  # Extensão de Rollout na UI do Argo CD: aba "Rollout" com os passos do canary, os pesos e as
+  # revisões. A v0.4.x exige Argo CD >= 3.5; como o cluster está na 3.0.0, usa a v0.3.7.
+  # O instalador baixa a extensão ao subir o argocd-server e a deixa no volume compartilhado.
+  - target:
+      kind: Deployment
+      name: argocd-server
+    patch: |-
+      - op: add
+        path: /spec/template/spec/initContainers
+        value:
+          - name: rollout-extension
+            image: quay.io/argoprojlabs/argocd-extension-installer:v0.0.9@sha256:d2b43c18ac1401f579f6d27878f45e253d1e3f30287471ae74e6a4315ceb0611
+            env:
+              - name: EXTENSION_NAME
+                value: rollout-extension
+              - name: EXTENSION_VERSION
+                value: v0.3.7
+              - name: EXTENSION_URL
+                value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.7/extension.tar
+              - name: EXTENSIONS_DIR
+                value: /tmp/extensions
+            volumeMounts:
+              - name: extensions
+                mountPath: /tmp/extensions/
+            securityContext:
+              runAsUser: 1000
+              allowPrivilegeEscalation: false
+      - op: add
+        path: /spec/template/spec/containers/0/volumeMounts/-
+        value:
+          name: extensions
+          mountPath: /tmp/extensions/
+      - op: add
+        path: /spec/template/spec/volumes/-
+        value:
+          name: extensions
+          emptyDir: {}
