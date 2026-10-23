@@ -20,3 +20,7 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # O CRD Rollout vem do app argo-rollouts; num cluster novo ele pode ainda não existir.
+      - SkipDryRunOnMissingResource=true
+      # Na troca de Deployment para Rollout, só remove o Deployment antigo depois que o resto ficou saudável.
+      - PruneLast=true
