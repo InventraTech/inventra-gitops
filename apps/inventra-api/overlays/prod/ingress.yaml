@@ -1,18 +1,30 @@
 # Acesso pelo IP público (Elastic IP) em HTTP, sem nome DNS e sem certificado.
-# Sem `host`, o Traefik atende qualquer requisição que chegue na porta 80.
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# IngressRoute do Traefik (e não Ingress) porque o destino é um TraefikService com pesos,
+# que divide o tráfego entre a versão estável e a canary durante o rollout.
+# Sem `host` nem `entryPoints`, atende qualquer requisição; o Ingress do Argo CD em /argocd
+# continua funcionando porque a regra mais longa tem prioridade.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
 metadata:
   name: inventra-api
 spec:
-  ingressClassName: traefik
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: inventra-api
-                port:
-                  name: http
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: inventra-api-traefik
+          kind: TraefikService
+---
+# Sem `weight`: quem define os pesos é o Argo Rollouts. Fixar um valor aqui deixaria o
+# Argo CD sempre OutOfSync.
+apiVersion: traefik.io/v1alpha1
+kind: TraefikService
+metadata:
+  name: inventra-api-traefik
+spec:
+  weighted:
+    services:
+      - name: inventra-api
+        port: 80
+      - name: inventra-api-canary
+        port: 80

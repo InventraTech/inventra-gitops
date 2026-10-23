@@ -8,19 +8,37 @@ aplica o que está na `main`. Ninguém roda `kubectl apply` à mão (exceto o bo
 ```
 bootstrap/argocd/      instala o Argo CD (aplicado manualmente uma vez)
 bootstrap/root-app.yaml  app-of-apps que aponta para clusters/prod
-clusters/prod/         Applications do Argo (cert-manager, sealed-secrets, issuers, inventra-api)
-platform/              cert-manager, sealed-secrets, ClusterIssuers (Let's Encrypt)
-apps/inventra-api/     base + overlays/prod (tag da imagem, ingress, segredos selados)
+clusters/prod/         Applications do Argo (cert-manager, sealed-secrets, argo-rollouts, issuers, inventra-api)
+platform/              cert-manager, sealed-secrets, argo-rollouts, ClusterIssuers (Let's Encrypt)
+apps/inventra-api/     base (Rollout canary) + overlays/prod (tag da imagem, IngressRoute, segredos selados)
 ```
 
-Ordem de sync (sync-waves): cert-manager e sealed-secrets (0) → cluster-issuers (1) → inventra-api (2).
+Ordem de sync (sync-waves): cert-manager, sealed-secrets e argo-rollouts (0) → cluster-issuers (1) → inventra-api (2).
 
 ## Fluxo de release
 
 1. Tag `vX.Y.Z` no repo do serviço → o CD builda e publica `ghcr.io/inventratech/inventra-api:vX.Y.Z`.
 2. O CD abre uma PR aqui alterando `images[].newTag` em `apps/inventra-api/overlays/prod/kustomization.yaml`.
 3. A PR é revisada e mergeada (este é o gate de produção) e o Argo CD sincroniza.
-4. **Rollback:** `git revert` do commit do bump e merge.
+4. O Argo Rollouts faz o deploy **canary**: a versão nova recebe 25% → 50% → 75% → 100% do
+   tráfego, com 5 minutos em cada passo (`apps/inventra-api/base/rollout.yaml`). Se o pod novo não
+   ficar Ready, o rollout para e a versão estável continua atendendo.
+5. **Rollback:** `git revert` do commit do bump e merge. Durante o canary, também dá para abortar (abaixo).
+
+### Acompanhar o canary
+
+No Argo CD, o app `inventra-api` mostra o `Rollout` como `Suspended` durante as pausas e
+`Healthy` no fim. Para ver os passos e os pesos, use o plugin do Argo Rollouts no servidor:
+
+```bash
+curl -fsSLo kubectl-argo-rollouts https://github.com/argoproj/argo-rollouts/releases/download/v1.10.1/kubectl-argo-rollouts-linux-amd64
+sudo install -m 755 kubectl-argo-rollouts /usr/local/bin/kubectl-argo-rollouts
+
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml   # no k3s (como root/sudo)
+kubectl argo rollouts get rollout inventra-api -n inventra --watch
+kubectl argo rollouts promote inventra-api -n inventra   # pula a pausa atual
+kubectl argo rollouts abort inventra-api -n inventra     # volta 100% do tráfego para a versão estável
+```
 
 > O passo 2 ainda não existe: depende do marco M5 (ajuste do `cd-java.yaml`).
 
