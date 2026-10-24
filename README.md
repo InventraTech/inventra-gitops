@@ -89,7 +89,7 @@ Só `SealedSecret` entra no git (a CI bloqueia `kind: Secret`).
 
 Chaves de `inventra-api-secrets`: `DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD JWT_SECRET
 CLOUDINARY_CLOUD_NAME CLOUDINARY_API_KEY CLOUDINARY_API_SECRET REDIS_HOST REDIS_PORT
-REDIS_USERNAME REDIS_PASSWORD`.
+REDIS_USERNAME REDIS_PASSWORD SENDGRID_API_KEY MAIL_FROM PASSWORD_RESET_WEB_URL`.
 
 ```bash
 kubectl create secret generic inventra-api-secrets -n inventra \
@@ -97,6 +97,12 @@ kubectl create secret generic inventra-api-secrets -n inventra \
   --dry-run=client -o yaml \
   | kubeseal --controller-namespace kube-system -o yaml \
   > apps/inventra-api/overlays/prod/sealed-secret-api.yaml
+```
+
+Para **adicionar chaves** sem refazer as existentes, use `--merge-into` (não precisa dos valores antigos):
+
+```bash
+kubectl create secret generic inventra-api-secrets -n inventra   --from-literal=REDIS_HOST=... --from-literal=REDIS_PORT=...   --from-literal=REDIS_USERNAME=... --from-literal=REDIS_PASSWORD=...   --from-literal=SENDGRID_API_KEY=... --from-literal=MAIL_FROM=...   --from-literal=PASSWORD_RESET_WEB_URL=https://SEU-FRONT/redefinir-senha   --dry-run=client -o yaml   | kubeseal --controller-namespace kube-system -o yaml       --merge-into apps/inventra-api/overlays/prod/sealed-secret-api.yaml
 ```
 
 Imagem no GHCR: o pacote é **público** (o repo da API é público), então não há pull secret. Depois do primeiro push, em *Packages → inventra-api → Package settings → Change visibility → Public*.
