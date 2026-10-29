@@ -10,7 +10,7 @@ resources:
 # Esta seção é atualizada automaticamente pelo CD (kustomize edit set image).
 images:
   - name: ghcr.io/inventratech/inventra-api
-    newTag: v1.0.9
+    newTag: v1.1.0
 
 patches:
   - target:
