@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: inventra
+resources:
+  - ../../base
+  - ingress.yaml
+  # Gerado com kubeseal (ver README, seção "IA (inventra-ai)").
+  - sealed-secret-ai.yaml
+
+# Esta seção é atualizada automaticamente pelo CD (sed na linha newTag).
+images:
+  - name: ghcr.io/inventratech/inventra-ai
+    newTag: v0.0.0
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: inventra-ai-config
+    patch: |-
+      - op: replace
+        path: /data/CORS_ORIGINS
+        value: "http://localhost:3000"   # TODO: trocar pela origem real do front quando existir

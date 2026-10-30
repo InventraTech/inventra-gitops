@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventra-ai
+  labels:
+    app.kubernetes.io/name: inventra-ai
+spec:
+  selector:
+    app.kubernetes.io/name: inventra-ai
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+# Recebe só os pods da versão nova durante o canary (o Argo Rollouts ajusta o selector).
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventra-ai-canary
+  labels:
+    app.kubernetes.io/name: inventra-ai
+spec:
+  selector:
+    app.kubernetes.io/name: inventra-ai
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

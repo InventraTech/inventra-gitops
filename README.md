@@ -110,6 +110,12 @@ Imagem no GHCR: o pacote é **público** (o repo da API é público), então nã
 
 Depois descomente as linhas correspondentes em `overlays/prod/kustomization.yaml`.
 
+## IA (inventra-ai)
+
+A IA (`InventraTech/inventra-artificial-intelligence-2`) usa o mesmo fluxo da API: tag `vX.Y.Z` → imagem `ghcr.io/inventratech/inventra-ai` → PR de bump em `apps/inventra-ai/overlays/prod/kustomization.yaml` → Argo CD → canary. Roda no namespace `inventra` e é publicada em `http://<Elastic IP>/ia/` (o Traefik tira o prefixo `/ia`; docs em `/ia/docs`). Fala com a API pelo Service interno `inventra-api.inventra.svc.cluster.local`.
+
+Chaves de `inventra-ai-secrets`: `MONGO_CONNECTION GEMINI_API_KEY GROQ_API_KEY TYPESAFE_API_KEY QDRANT_URL QDRANT_API_KEY`. Na EC2, sele cada valor (como na seção Segredos) com `--name inventra-ai-secrets`, monte `apps/inventra-ai/overlays/prod/sealed-secret-ai.yaml` e descomente a linha no overlay. Faça isso **antes** do primeiro release, senão o pod fica em `CreateContainerConfigError`.
+
 ## Pendências (TODO)
 
 - [ ] **API:** liberar `/actuator/health/**` no `SecurityConfig` (hoje só `/actuator/health` é `permitAll`; as probes de liveness e readiness retornariam 401).

@@ -1,0 +1,18 @@
+# Configuração NÃO secreta. Credenciais ficam no SealedSecret "inventra-ai-secrets"
+# (MONGO_CONNECTION, GEMINI_API_KEY, GROQ_API_KEY, TYPESAFE_API_KEY, QDRANT_URL, QDRANT_API_KEY).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventra-ai-config
+data:
+  IAI_AUTH_MODE: "spring"
+  IAI_BUSINESS_MODE: "spring"
+  IAI_STORAGE_MODE: "mongo"
+  IAI_LLM_MODE: "live"
+  # Chamada interna ao Service da API (http é aceito só para *.svc.cluster.local).
+  INVENTRA_API_URL: "http://inventra-api.inventra.svc.cluster.local"
+  # A IA é publicada em /ia (o Traefik tira o prefixo); o root_path faz o /docs achar o /ia/openapi.json.
+  # As chamadas à API (e ao LLM por trás dela) podem passar dos 10 s do padrão.
+  INVENTRA_HTTP_TIMEOUT: "60"
+  UVICORN_ROOT_PATH: "/ia"
+  CORS_ORIGINS: "http://localhost:3000"

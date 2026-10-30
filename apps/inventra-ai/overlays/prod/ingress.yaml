@@ -1,0 +1,38 @@
+# A IA responde em http://<Elastic IP>/ia/... (a API continua em /). O Traefik escolhe a rota de
+# regra mais longa, então /ia vence o PathPrefix(`/`) da API e o /argocd continua intacto.
+# O middleware tira o /ia antes de chegar ao FastAPI, que não conhece o prefixo.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: inventra-ai-strip-prefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /ia
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: inventra-ai
+spec:
+  routes:
+    - match: Path(`/ia`) || PathPrefix(`/ia/`)
+      kind: Rule
+      middlewares:
+        - name: inventra-ai-strip-prefix
+      services:
+        - name: inventra-ai-traefik
+          kind: TraefikService
+---
+# Sem `weight`: quem define os pesos é o Argo Rollouts (fixar um valor deixaria o Argo CD OutOfSync).
+apiVersion: traefik.io/v1alpha1
+kind: TraefikService
+metadata:
+  name: inventra-ai-traefik
+spec:
+  weighted:
+    services:
+      - name: inventra-ai
+        port: 80
+      - name: inventra-ai-canary
+        port: 80

@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: inventra-ai
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/InventraTech/inventra-gitops.git
+    targetRevision: main
+    path: apps/inventra-ai/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: inventra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # O CRD Rollout vem do app argo-rollouts; num cluster novo ele pode ainda não existir.
+      - SkipDryRunOnMissingResource=true
+      # Na troca de Deployment para Rollout, só remove o Deployment antigo depois que o resto ficou saudável.
+      - PruneLast=true
