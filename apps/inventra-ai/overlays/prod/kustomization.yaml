@@ -4,8 +4,8 @@ namespace: inventra
 resources:
   - ../../base
   - ingress.yaml
-  # Gerado com kubeseal (ver README, seção "Segredos da IA"): descomente depois de criar o arquivo.
-  # - sealed-secret-ai.yaml
+  # Gerado com kubeseal (ver README, seção "IA (inventra-ai)").
+  - sealed-secret-ai.yaml
 
 # Esta seção é atualizada automaticamente pelo CD (sed na linha newTag).
 images:
