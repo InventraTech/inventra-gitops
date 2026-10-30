@@ -10,7 +10,7 @@ resources:
 # Esta seção é atualizada automaticamente pelo CD (sed na linha newTag).
 images:
   - name: ghcr.io/inventratech/inventra-ai
-    newTag: v1.0.0
+    newTag: v1.1.0
 
 patches:
   - target:
