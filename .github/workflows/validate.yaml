@@ -31,7 +31,7 @@ jobs:
       - name: "kustomize build + kubeconform"
         # CRDs (Application, ClusterIssuer, SealedSecret, Rollout, IngressRoute) não têm schema padrão: são ignorados.
         run: |
-          for dir in apps/inventra-api/overlays/prod platform/cert-manager platform/sealed-secrets platform/argo-rollouts platform/cluster-issuers bootstrap/argocd; do
+          for dir in apps/inventra-api/overlays/prod apps/inventra-ai/overlays/prod platform/cert-manager platform/sealed-secrets platform/argo-rollouts platform/cluster-issuers bootstrap/argocd; do
             echo "::group::$dir"
             kustomize build "$dir" | kubeconform -strict -summary -ignore-missing-schemas
             echo "::endgroup::"
