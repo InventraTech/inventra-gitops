@@ -3,25 +3,33 @@
 Estado desejado do cluster de **produção** da Inventra. O Argo CD observa este repo e
 aplica o que está na `main`. Ninguém roda `kubectl apply` à mão (exceto o bootstrap, uma vez).
 
+## Infraestrutura
+
+O cluster de produção é um **k3s** (Kubernetes) numa instância **EC2 da AWS**, exposta por um
+**Elastic IP**. Os serviços rodam como containers Docker, com as imagens publicadas no GHCR, e o
+Traefik do k3s recebe o tráfego HTTP: a API em `/` e a IA em `/ia/`.
+
 ## Estrutura
 
 ```
 bootstrap/argocd/      instala o Argo CD (aplicado manualmente uma vez)
 bootstrap/root-app.yaml  app-of-apps que aponta para clusters/prod
-clusters/prod/         Applications do Argo (cert-manager, sealed-secrets, argo-rollouts, issuers, inventra-api)
-platform/              cert-manager, sealed-secrets, argo-rollouts, ClusterIssuers (Let's Encrypt)
+clusters/prod/         Applications do Argo (cert-manager, sealed-secrets, argo-rollouts, issuers, argocd-ingress, inventra-api, inventra-ai)
+platform/              cert-manager, sealed-secrets, argo-rollouts, ClusterIssuers (Let's Encrypt), Ingress do Argo CD
 apps/inventra-api/     base (Rollout canary) + overlays/prod (tag da imagem, IngressRoute, segredos selados)
+apps/inventra-ai/      mesma estrutura da API, publicada em /ia
 ```
 
-Ordem de sync (sync-waves): cert-manager, sealed-secrets e argo-rollouts (0) → cluster-issuers (1) → inventra-api (2).
+Ordem de sync (sync-waves): cert-manager, sealed-secrets e argo-rollouts (0) → cluster-issuers (1) → argocd-ingress, inventra-api e inventra-ai (2).
 
 ## Fluxo de release
 
-1. Tag `vX.Y.Z` no repo do serviço → o CD builda e publica `ghcr.io/inventratech/inventra-api:vX.Y.Z`.
-2. O CD abre uma PR aqui alterando `images[].newTag` em `apps/inventra-api/overlays/prod/kustomization.yaml`.
+1. Tag `vX.Y.Z` no repo do serviço → o CD builda e publica `ghcr.io/inventratech/<app>:vX.Y.Z`.
+2. O CD (via GitHub App `inventra-release-bot`) abre uma PR aqui alterando `images[].newTag` em
+   `apps/<app>/overlays/prod/kustomization.yaml`.
 3. A PR é revisada e mergeada (este é o gate de produção) e o Argo CD sincroniza.
 4. O Argo Rollouts faz o deploy **canary**: a versão nova recebe 25% → 50% → 75% → 100% do
-   tráfego, com 5 minutos em cada passo (`apps/inventra-api/base/rollout.yaml`). Se o pod novo não
+   tráfego, com 5 minutos em cada passo (`apps/<app>/base/rollout.yaml`). Se o pod novo não
    ficar Ready, o rollout para e a versão estável continua atendendo.
 5. **Rollback:** `git revert` do commit do bump e merge. Durante o canary, também dá para abortar (abaixo).
 
@@ -39,8 +47,6 @@ kubectl argo rollouts get rollout inventra-api -n inventra --watch
 kubectl argo rollouts promote inventra-api -n inventra   # pula a pausa atual
 kubectl argo rollouts abort inventra-api -n inventra     # volta 100% do tráfego para a versão estável
 ```
-
-> O passo 2 ainda não existe: depende do marco M5 (ajuste do `cd-java.yaml`).
 
 ## Bootstrap (uma vez, no servidor novo)
 
@@ -120,8 +126,9 @@ Chaves de `inventra-ai-secrets`: `MONGO_CONNECTION GEMINI_API_KEY GROQ_API_KEY T
 
 - [ ] **API:** liberar `/actuator/health/**` no `SecurityConfig` (hoje só `/actuator/health` é `permitAll`; as probes de liveness e readiness retornariam 401).
 - [ ] **API:** trocar o CI para não usar banco e Redis reais.
-- [ ] Gerar os SealedSecrets (acima) e descomentá-los no overlay.
+- [x] Gerar os SealedSecrets (acima) e descomentá-los no overlay.
 - [ ] `CODEOWNERS`: trocar o dono individual por um time.
 - [ ] Login do Argo via GitHub OAuth (Dex) e acesso de leitura para a equipe.
-- [ ] Proteger a `main` (PR obrigatória + check `Validate`).
-- [ ] M5: CD por tag abrindo a PR de bump aqui.
+- [x] Proteger a `main` (ruleset com PR obrigatória e 1 aprovação).
+- [ ] Exigir o check `Validate` no ruleset da `main`.
+- [x] M5: CD por tag abrindo a PR de bump aqui.
