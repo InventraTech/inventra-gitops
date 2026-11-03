@@ -120,7 +120,7 @@ Depois descomente as linhas correspondentes em `overlays/prod/kustomization.yaml
 
 A IA (`InventraTech/inventra-artificial-intelligence-2`) usa o mesmo fluxo da API: tag `vX.Y.Z` → imagem `ghcr.io/inventratech/inventra-ai` → PR de bump em `apps/inventra-ai/overlays/prod/kustomization.yaml` → Argo CD → canary. Roda no namespace `inventra` e é publicada em `http://<Elastic IP>/ia/` (o Traefik tira o prefixo `/ia`; docs em `/ia/docs`). Fala com a API pelo Service interno `inventra-api.inventra.svc.cluster.local`.
 
-Chaves de `inventra-ai-secrets`: `MONGO_CONNECTION GEMINI_API_KEY GROQ_API_KEY TYPESAFE_API_KEY QDRANT_URL QDRANT_API_KEY`. Na EC2, sele cada valor (como na seção Segredos) com `--name inventra-ai-secrets`, monte `apps/inventra-ai/overlays/prod/sealed-secret-ai.yaml` e descomente a linha no overlay. Faça isso **antes** do primeiro release, senão o pod fica em `CreateContainerConfigError`.
+Chaves de `inventra-ai-secrets`: `MONGO_CONNECTION GEMINI_API_KEY GEMINI_API_KEY_2..5 GROQ_API_KEY GROQ_API_KEY_2..6 OPEN_ROUTER_API_KEY OPEN_AI_KEY TYPESAFE_API_KEY QDRANT_URL QDRANT_API_KEY`. As chaves numeradas, a do OpenRouter e a da OpenAI alimentam o fallback de LLM (`docs/provedores-llm.md` no repo da IA). Na EC2, sele cada valor (como na seção Segredos) com `--name inventra-ai-secrets`, monte `apps/inventra-ai/overlays/prod/sealed-secret-ai.yaml` e descomente a linha no overlay. Faça isso **antes** do primeiro release, senão o pod fica em `CreateContainerConfigError`.
 
 ## Pendências (TODO)
 
